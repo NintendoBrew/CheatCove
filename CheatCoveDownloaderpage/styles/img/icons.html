@@ -1,0 +1,277 @@
+<!DOCTYPE HTML>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" type="text/css" href="include/style.css">
+    <title>Fort42 - 404 Error</title>
+    <link href='http://fonts.googleapis.com/css?family=Oswald:400,300' rel='stylesheet' type='text/css' />
+<link href='http://fonts.googleapis.com/css?family=Roboto:400,500' rel='stylesheet' type='text/css' />
+<link href='http://fonts.googleapis.com/css?family=Roboto+Condensed' rel='stylesheet' type='text/css' />
+<link rel="shortcut icon" href="http://www.fort42.com/favicon.ico" type="image/x-icon" />
+<link rel="stylesheet" type="text/css" href="http://www.fort42.com/styles/day.css" />
+<link rel="stylesheet" type="text/css" href="http://www.fort42.com/styles/wbbtheme.css" />
+<!-- Begin Cookie Consent plugin by Silktide - http://silktide.com/cookieconsent -->
+<script type="text/javascript">
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/1.0.9/cookieconsent.min.js"></script>
+<!-- End Cookie Consent plugin -->
+<script type="text/javascript" src="http://www.fort42.com/js/jquery.min.js"></script>
+<script type="text/javascript" src="http://www.fort42.com/js/qrgen.js"></script>
+<script type="text/javascript" src="http://www.fort42.com/js/jquery.wysibb.min.js"></script>
+<script type="text/javascript" src="http://www.fort42.com/js/textareaOpt.js"></script>
+<script type="text/javascript" src="http://www.fort42.com/js/tinycon.min.js"></script>
+<script type="text/javascript" src="http://www.fort42.com/js/js.cookie.js"></script>
+<link type="text/css" rel="stylesheet" id="arrowchat_css" media="all" href="/chat/external.php?type=css" charset="utf-8" />
+<script type="text/javascript" src="http://www.fort42.com/chat/includes/js/jquery.js"></script>
+<script type="text/javascript" src="http://www.fort42.com/chat/includes/js/jquery-ui.js"></script>
+<!--Christmas ONLY-->
+<!--<script type="text/javascript" src="http://www.fort42.com/js/snow.js"></script>-->
+<script type="text/javascript">
+function showloginbox(){
+	$('#light').css("display","block");
+	$('#fade').css("display","block");
+	$('#username_top').focus();
+}
+function closeloginbox(){
+	$('#light').css("display","none");
+	$('#fade').css("display","none");
+}
+
+var box_state = 0;
+var box_loading = false;
+var notifications_left = 0;
+var up_error = 0;
+function opennotificationbox(rld){
+	if((box_state!=1 && !box_loading) || rld==1){
+		box_state = 1;
+		box_loading = true;
+		$('#ntf_bot_popup').css("display","table");
+		$('#usr_bot_popup').css("display","none");
+		$('#notif_box').css("display","block");
+		$('#notif_box_shadow').css("display","block");
+		$('#main_notify').html("<p>Loading please wait...</p>");
+		$('#notif_box_shadow').height($('#notif_box').height());
+		$.ajax({
+			type: "GET",
+			url: "http://www.fort42.com/request/notifications.php",             
+			dataType: "html",           
+			success: function(response){
+				box_loading = false;
+				if(response!=""){
+					$('#main_notify').html(response);
+					var return_num = $('#notification_num_check').val();
+					if(return_num=="0"){
+						notifications_left = 0;
+						$("#notification_btn").removeClass("notif_occupy");
+					}else if(return_num!="-1"){ //If return_num>0
+						notifications_left = parseInt(return_num);
+						//return_num sends number of notifications left back in string
+					}
+				}else{
+					$('#main_notify').html("<p>Something went wrong. Please try again later.</p>");
+				}
+				$('#notif_box_shadow').height($('#notif_box').height());
+			}
+		});
+	}
+}
+function openuserbox(rld){
+	if((box_state!=2 && !box_loading) || rld==1){
+		box_state = 2;
+		box_loading = true;
+		$('#ntf_bot_popup').css("display","none");
+		$('#usr_bot_popup').css("display","table");
+		$('#notif_box').css("display","block");
+		$('#notif_box_shadow').css("display","block");
+		$('#main_notify').html("<p>Loading please wait...</p>");
+		$('#notif_box_shadow').height($('#notif_box').height());
+		$.ajax({
+			type: "GET",
+			url: "http://www.fort42.com/request/userbox.php?error="+up_error+"&cur_page=http%3A%2F%2Fwww.fort42.com%2Fstyles%2Fimg%2Ficons.png",             
+			dataType: "html",           
+			success: function(response){
+				box_loading = false;
+				if(response!=""){
+					$('#main_notify').html(response);
+				}else{
+					$('#main_notify').html("<p>Something went wrong. Please try again later.</p>");
+				}
+				$('#notif_box_shadow').height($('#notif_box').height());
+			}
+		});
+	}
+}
+$('html').click(function(){
+	if(!$(event.target).closest('#notif_box').length) {
+        if($('#notif_box').is(":visible")) {
+            if(box_state>0 && !box_loading){
+				$('#notif_box').css("display","none");
+				$('#notif_box_shadow').css("display","none");
+				box_state = 0;
+			}
+        }
+    }
+});
+
+setInterval(check_new,5000); //Check for new notifications every 5 seconds
+function check_new(){
+	$.ajax({
+		type: "GET",
+		url: "http://www.fort42.com/request/checknew.php",             
+		dataType: "text",           
+		success: function(response){
+			if(response!="" && response!="-1"){
+				var notify_now = 0;
+				var data = response.split(",");
+				if(parseInt(data[0])!=notifications_left){
+					notifications_left = parseInt(data[0]);
+					if(notifications_left>0){
+						$("#notification_btn").addClass("notif_occupy");
+						notify_now = 1;
+					}else{
+						$("#notification_btn").removeClass("notif_occupy");
+					}
+				}
+				Tinycon.setBubble(notifications_left);
+			}
+			if(notify_now>0){
+				$("#notifier").removeClass("bignotifier");
+				document.getElementById("notifier").offsetWidth = document.getElementById("notifier").offsetWidth;
+				$("#notifier").addClass("bignotifier");
+				if(notify_now==1){
+					$("#notifier").css("background-position","0 -50px");
+					if(notifications_left==1){
+						$("#notifier").html("1 Unread Notification");
+					}else{
+						$("#notifier").html(notifications_left+" Unread Notifications");
+					}
+				}
+				notify_now = 0;
+			}
+		}
+	});
+}
+check_new();
+
+//Christmas ONLY
+//$(document).ready( function(){
+//    $.fn.snow();
+//	//});
+</script></head>
+
+<body>
+<div id="globalheader">		
+	<div id="logoheader">
+        <div id="logo"><a href="http://www.fort42.com/"><img src="http://www.fort42.com/images/showlogo.png" width="230" height="40" alt="Fort42"></a></div>
+	</div>
+    <div id="navigation-container">
+        <ul id="navigation">
+            <li class="first"><a href="http://www.fort42.com/"><b>Home</b></a></li>
+            <li><a href="http://www.fort42.com/users/"><b>Users</b></a></li>
+            <li><a href="http://www.fort42.com/ar3ds/"><b>AR3DS</b></a></li>
+            <li><a href="http://www.fort42.com/gateshark/"><b>GateShark</b></a></li>
+            
+						<li class="last"><a href="javascript:void(0);" onclick="showloginbox();"><b>Login/Register</b></a></li>
+                    </ul>
+    </div>
+</div>
+
+<!--LOGIN-->
+<div id="fade" class="black_overlay"></div>
+<div id="light" class="white_content">
+<a href="javascript:void(0);" onclick="closeloginbox();" style="float:right;"><img src="http://www.fort42.com/images/close.png" alt="Close" /></a>
+<form method="post" action="http:///login/?return=http%3A%2F%2Fwww.fort42.com%2Fstyles%2Fimg%2Ficons.png">
+	<center><table class="border-table">
+		<tbody>
+			<tr>
+               <td>
+					<strong>Username:</strong>
+               </td>
+               <td>
+					<input type="text" name="login_u" id="username_top" size="15" maxlength="15">
+               </td>
+               <td>
+					<strong>Password:</strong>
+                </td>
+                <td>
+					<input type="password" name="login_p" id="password_top" size="12" value="" maxlength="20">
+                </td>
+               	<td>
+					<input class="mediumbtn" type="submit" name="submit" value="Login">
+				</td>
+			</tr>
+           	<tr>
+            	<td colspan="2"><a href="http://www.fort42.com/login/?recpwd=1">Lost your password?</a></td>
+            	<td colspan="2"><a href="http://www.fort42.com/login/?resnd=1">Resend verification email</a></td>
+           		<td style="text-align:middle;font-size:11px;padding-top:10px;">
+                    <input name="login_r" type="checkbox" id="remember2" value="checked" checked><label for="remember2">Remember me</label>
+               	</td>
+            </tr>
+            <tr>
+				<td colspan="5" style="text-align:left;font-size:11px;padding-top:10px;">
+					<a href="http://www.fort42.com/login/">Click here to register</a>
+				</td>
+			</tr>
+		</tbody>
+	</table></center>
+</form>
+</div>
+<!--LOGIN-->
+
+<!--NOTIF-->
+<div id="notifier"></div>
+<div id="notif_box">
+	<div id="main_notify"></div>
+    <table id="ntf_bot_popup" class="bottom-not"><tbody><tr>
+		<td><a href="http://www.fort42.com/account/notifications/" class="notif-show-link">Show All...</a></td>
+		<td style="text-align:right;"><a href="http://www.fort42.com/account/notification-preferences/" class="notif-show-link">Notification Preferences</a></td>
+    </tr></tbody></table>
+    <table id="usr_bot_popup" class="bottom-not"><tbody><tr>
+		<td><a href="http://www.fort42.com/account/" class="notif-show-link">Account</a></td>
+		<td style="text-align:right;"><a href="http://www.fort42.com/account/friends/" class="notif-show-link">Friends</a></td>
+    </tr></tbody></table>
+</div>
+<div id="notif_box_shadow"></div>
+<!--NOTIF--><!--CONTENT START-->
+<div id="contentcontainer">
+	<div id="main">
+    	<br><img src="http://www.fort42.com/images/404.png" /><br><br><br><br><br><br><br><br><br><br><br><br>
+    </div>
+   	
+    <h3 id="ftn-headline">Recently added...</h3>
+<div class="ftn-container">
+    	<div class="ftn-float">
+		<a href="http://www.fort42.com/gateshark/game1967/"><img src="http://www.fort42.com/uploaded_files/boxarts/1510872449.png" alt="Ice Station Z" /></a>
+		<p><span class="tnheader"><a href="http://www.fort42.com/gateshark/game1967/">Ice Station Z (JPN)</a></span></p>
+	</div>
+    	<div class="ftn-float">
+		<a href="http://www.fort42.com/gateshark/game1966/"><img src="http://www.fort42.com/uploaded_files/boxarts/1510872420.png" alt="Ice Station Z" /></a>
+		<p><span class="tnheader"><a href="http://www.fort42.com/gateshark/game1966/">Ice Station Z (EUR)</a></span></p>
+	</div>
+    	<div class="ftn-float">
+		<a href="http://www.fort42.com/gateshark/game1965/"><img src="http://www.fort42.com/uploaded_files/boxarts/1510872384.png" alt="Ice Station Z" /></a>
+		<p><span class="tnheader"><a href="http://www.fort42.com/gateshark/game1965/">Ice Station Z (USA)</a></span></p>
+	</div>
+    	<div class="ftn-float">
+		<a href="http://www.fort42.com/gateshark/game1964/"><img src="http://www.fort42.com/uploaded_files/boxarts/1510286531.png" alt="Pokemon Ultra Moon" /></a>
+		<p><span class="tnheader"><a href="http://www.fort42.com/gateshark/game1964/">Pokemon Ultra Moon (GLO)</a></span></p>
+	</div>
+    </div></div>
+<!--CONTENT END-->
+<div id="globalfooter">
+  <div id="footerlinks">
+		<ul>
+			<li class="flistheader">Fort42</li>
+			<li><a href="http://www.fort42.com/">Home</a></li>
+            <li><a href="http://www.fort42.com/login/">Login</a></li>
+			<li><a href="http://www.fort42.com/login/">Register</a></li>      	</ul>
+		<ul>
+			<li class="flistheader">Cheat Database</li>
+			<li><a href="http://www.fort42.com/ar3ds/">AR3DS</a></li>
+			<li><a href="http://www.fort42.com/ar3ds/editor/">- Editor</a></li>
+			<li><a href="http://www.fort42.com/gateshark/">GateShark</a></li>
+		</ul>
+        	</div>
+	<center><p id="footerline">Fort42 created by storm75x. (2015)<br>All codes in the site belong to their respective creators.</p></center>
+</div>
+<script type="text/javascript" src="http://www.fort42.com/chat/external.php?type=djs" charset="utf-8"></script>
+<script type="text/javascript" src="http://www.fort42.com/chat/external.php?type=js" charset="utf-8"></script></body>
+</html>

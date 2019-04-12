@@ -1,0 +1,366 @@
+<!DOCTYPE HTML>
+
+<!-- Mirrored from www.fort42.com/ by HTTrack Website Copier/3.x [XR&CO'2014], Sat, 19 Jan 2019 08:47:58 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" type="text/css" href="include/style.html">
+    <title>CheatCoveDownloader</title>
+    <link href='http://fonts.googleapis.com/css?family=Oswald:400,300' rel='stylesheet' type='text/css' />
+<link href='http://fonts.googleapis.com/css?family=Roboto:400,500' rel='stylesheet' type='text/css' />
+<link href='http://fonts.googleapis.com/css?family=Roboto+Condensed' rel='stylesheet' type='text/css' />
+<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+<link rel="stylesheet" type="text/css" href="styles/day.css" />
+<link rel="stylesheet" type="text/css" href="styles/wbbtheme.css" />
+<!-- Begin Cookie Consent plugin by Silktide - http://silktide.com/cookieconsent -->
+<script type="text/javascript">
+<script type="text/javascript" src="../cdnjs.cloudflare.com/ajax/libs/cookieconsent2/1.0.9/cookieconsent.min.js"></script>
+<!-- End Cookie Consent plugin -->
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/qrgen.js"></script>
+<script type="text/javascript" src="js/jquery.wysibb.min.js"></script>
+<script type="text/javascript" src="js/textareaOpt.js"></script>
+<script type="text/javascript" src="js/tinycon.min.js"></script>
+<script type="text/javascript" src="js/js.cookie.js"></script>
+<link type="text/css" rel="stylesheet" id="arrowchat_css" media="all" href="chat/external78ce.css?type=css" charset="utf-8" />
+<script type="text/javascript" src="chat/includes/js/jquery.js"></script>
+<script type="text/javascript" src="chat/includes/js/jquery-ui.js"></script>
+<!--Christmas ONLY-->
+<!--auto Ads-->
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({
+          google_ad_client: "ca-pub-6199326973101336",
+          enable_page_level_ads: true
+     });
+</script>
+<!--<script type="text/javascript" src="http://www.fort42.com/js/snow.js"></script>-->
+<script type="text/javascript">
+function showloginbox(){
+	$('#light').css("display","block");
+	$('#fade').css("display","block");
+	$('#username_top').focus();
+}
+function closeloginbox(){
+	$('#light').css("display","none");
+	$('#fade').css("display","none");
+}
+
+var box_state = 0;
+var box_loading = false;
+var notifications_left = 0;
+var up_error = 0;
+function opennotificationbox(rld){
+	if((box_state!=1 && !box_loading) || rld==1){
+		box_state = 1;
+		box_loading = true;
+		$('#ntf_bot_popup').css("display","table");
+		$('#usr_bot_popup').css("display","none");
+		$('#notif_box').css("display","block");
+		$('#notif_box_shadow').css("display","block");
+		$('#main_notify').html("<p>Loading please wait...</p>");
+		$('#notif_box_shadow').height($('#notif_box').height());
+		$.ajax({
+			type: "GET",
+			url: "http://www.fort42.com/request/notifications.php",             
+			dataType: "html",           
+			success: function(response){
+				box_loading = false;
+				if(response!=""){
+					$('#main_notify').html(response);
+					var return_num = $('#notification_num_check').val();
+					if(return_num=="0"){
+						notifications_left = 0;
+						$("#notification_btn").removeClass("notif_occupy");
+					}else if(return_num!="-1"){ //If return_num>0
+						notifications_left = parseInt(return_num);
+						//return_num sends number of notifications left back in string
+					}
+				}else{
+					$('#main_notify').html("<p>Something went wrong. Please try again later.</p>");
+				}
+				$('#notif_box_shadow').height($('#notif_box').height());
+			}
+		});
+	}
+}
+function openuserbox(rld){
+	if((box_state!=2 && !box_loading) || rld==1){
+		box_state = 2;
+		box_loading = true;
+		$('#ntf_bot_popup').css("display","none");
+		$('#usr_bot_popup').css("display","table");
+		$('#notif_box').css("display","block");
+		$('#notif_box_shadow').css("display","block");
+		$('#main_notify').html("<p>Loading please wait...</p>");
+		$('#notif_box_shadow').height($('#notif_box').height());
+		$.ajax({
+			type: "GET",
+			url: "http://www.fort42.com/request/userbox.php?error="+up_error+"&cur_page=http%3A%2F%2Fwww.fort42.com%2F",             
+			dataType: "html",           
+			success: function(response){
+				box_loading = false;
+				if(response!=""){
+					$('#main_notify').html(response);
+				}else{
+					$('#main_notify').html("<p>Something went wrong. Please try again later.</p>");
+				}
+				$('#notif_box_shadow').height($('#notif_box').height());
+			}
+		});
+	}
+}
+$('html').click(function(){
+	if(!$(event.target).closest('#notif_box').length) {
+        if($('#notif_box').is(":visible")) {
+            if(box_state>0 && !box_loading){
+				$('#notif_box').css("display","none");
+				$('#notif_box_shadow').css("display","none");
+				box_state = 0;
+			}
+        }
+    }
+});
+
+setInterval(check_new,5000); //Check for new notifications every 5 seconds
+function check_new(){
+	$.ajax({
+		type: "GET",
+		url: "http://www.fort42.com/request/checknew.php",             
+		dataType: "text",           
+		success: function(response){
+			if(response!="" && response!="-1"){
+				var notify_now = 0;
+				var data = response.split(",");
+				if(parseInt(data[0])!=notifications_left){
+					notifications_left = parseInt(data[0]);
+					if(notifications_left>0){
+						$("#notification_btn").addClass("notif_occupy");
+						notify_now = 1;
+					}else{
+						$("#notification_btn").removeClass("notif_occupy");
+					}
+				}
+				Tinycon.setBubble(notifications_left);
+			}
+			if(notify_now>0){
+				$("#notifier").removeClass("bignotifier");
+				document.getElementById("notifier").offsetWidth = document.getElementById("notifier").offsetWidth;
+				$("#notifier").addClass("bignotifier");
+				if(notify_now==1){
+					$("#notifier").css("background-position","0 -50px");
+					if(notifications_left==1){
+						$("#notifier").html("1 Unread Notification");
+					}else{
+						$("#notifier").html(notifications_left+" Unread Notifications");
+					}
+				}
+				notify_now = 0;
+			}
+		}
+	});
+}
+check_new();
+
+//Christmas ONLY
+//$(document).ready( function(){
+//    $.fn.snow();
+//	//});
+</script></head>
+
+<body>
+<div id="globalheader">		
+	<div id="logoheader">
+        <div id="logo"><a href="index.html"><img src="../3ds/imgs/cheatcove logo.jpg" width="160" height="55" alt="Fort42"></a></div>
+	</div>
+    <div id="navigation-container">
+        <ul id="navigation">
+          <li class="first"><a href="https://www.cheatcove.cc"><b>Home</b></a></li>
+            <li><a href="https://www.cheatcove.cc/users"><b>Users (coming soon)</b></a></li>
+            <li><a href="https://www.cheatcove.cc/switch"><b>Switch</b></a></li>
+            <li><a href="https://www.cheatcove.cc/3ds"><b>3ds</b></a></li>
+            <li><a href="wii u/index.html"><b>WiiU</b></a></li>
+            <li><a href="https://www.cheatcove.cc/wii"><b>Wii</b></a></li>
+		    <li><a href="https://www.cheatcove.cc/ds"><b>Ds</b></a></li>
+			<li><a href="https://www.cheatcove.cc/contact"><b>Contact</b></a></li>
+			<li><a href="https://www.cheatcove.cc/chat"><b>CheatCove.cc Discord chat</b></a></li>
+			
+			
+
+			
+			
+		<li class="last"><a href="javascript:void(0);" onclick="showloginbox();"><b>Login/Register</b></a></li>
+                    </ul>
+    </div>
+</div>
+
+<!--LOGIN-->
+<div id="fade" class="black_overlay"></div>
+<div id="light" class="white_content">
+<a href="javascript:void(0);" onclick="closeloginbox();" style="float:right;"><img src="images/close.png" alt="Close" /></a>
+<form method="post" action="http://www.fort42.com/login/?return=http%3A%2F%2Fwww.fort42.com%2F">
+	<center><table class="border-table">
+		<tbody>
+			<tr>
+               <td>
+					<strong>Username:</strong>
+               </td>
+               <td>
+					<input type="text" name="login_u" id="username_top" size="15" maxlength="15">
+               </td>
+               <td>
+					<strong>Password:</strong>
+                </td>
+                <td>
+					<input type="password" name="login_p" id="password_top" size="12" value="" maxlength="20">
+                </td>
+               	<td>
+					<input class="mediumbtn" type="submit" name="submit" value="Login">
+				</td>
+			</tr>
+           	<tr>
+            	<td colspan="2"><a href="login/indexc86c.html?recpwd=1">Lost your password?</a></td>
+            	<td colspan="2"><a href="login/index2d8a.html?resnd=1">Resend verification email</a></td>
+           		<td style="text-align:middle;font-size:11px;padding-top:10px;">
+                    <input name="login_r" type="checkbox" id="remember2" value="checked" checked><label for="remember2">Remember me</label>
+               	</td>
+            </tr>
+            <tr>
+				<td colspan="5" style="text-align:left;font-size:11px;padding-top:10px;">
+					<a href="login/index.html">Click here to register</a>
+				</td>
+			</tr>
+		</tbody>
+	</table></center>
+</form>
+</div>
+<!--LOGIN-->
+
+<!--NOTIF-->
+<div id="notifier"></div>
+<div id="notif_box">
+	<div id="main_notify"></div>
+    <table id="ntf_bot_popup" class="bottom-not"><tbody><tr>
+		<td><a href="account/notifications/index.html" class="notif-show-link">Show All...</a></td>
+		<td style="text-align:right;"><a href="account/notification-preferences/index.html" class="notif-show-link">Notification Preferences</a></td>
+    </tr></tbody></table>
+    <table id="usr_bot_popup" class="bottom-not"><tbody><tr>
+		<td><a href="account/index.html" class="notif-show-link">Account</a></td>
+		<td style="text-align:right;"><a href="account/friends/index.html" class="notif-show-link">Friends</a></td>
+    </tr></tbody></table>
+</div>
+<div id="notif_box_shadow"></div>
+<!--NOTIF--><!--CONTENT START-->
+<img src="http://www.quick-counter.net/aip.php?tp=bt&tz=Australia%2FSydney" alt="HTML hit counter - Quick-counter.net" border="0" />
+<div id="contentcontainer">
+	<div id="main">
+	  <h1>CheatCoveDownloader</h1>
+	  <p>Note: still In development (Not released yet)</p>
+	  <h3> CheatCoveDownloader3ds Github: </h3>
+	  <p><a href="https://github.com/NintendoBrew/CheatcoveDownloader3ds"> https://github.com/NintendoBrew/CheatcoveDownloader3ds</a></p>
+	  <h3>&nbsp;</h3>
+	  <h3> CheatCoveDownloaderWiiU Github:</h3>
+	  <p><a href="https://github.com/NintendoBrew/CheatcoveDownloaderWiiU"> https://github.com/NintendoBrew/CheatcoveDownloaderWiiU</a></p>
+	  <p>&nbsp;</p>
+	  <h3><strong>Cdn links for CheatCoveDownloader3ds :</strong></h3>
+	  <p> Luma gateshark cheats</p>
+	  <p>Luma plugin .3gx cheats</p>
+	  <p>Ntrcfw plugin cheats</p>
+	  <p><a href="https://drive.google.com/uc?export=download&amp;id=1kvUMvIGI3AbyG_4WV5bN9EsuU1pECa0K"> Custom luma with plugin support</a></p>
+	  <ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-6199326973101336"
+     data-ad-slot="7568916339"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script>	
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+</div>
+   	<script async src="../pagead2.googlesyndication.com/pagead/js/f.txt"></script>
+    <!-- rxTools -->
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-7251077850681667"
+         data-ad-slot="7159219638"
+         data-ad-format="auto"></ins>
+    <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+    <h3 id="ftn-headline">Recently added...</h3>
+<div class="ftn-container">
+    	<div class="ftn-float">
+		<a href="gateshark/game1967/index.html"><img src="wii u/imgs/WiiU_MarioKart8.jpg" alt="Ice Station Z" /></a>
+		<p><span class="tnheader"><a href="wii u/Mario Kart 8 (v4.1, USA) titleid (000500001010ec00)/index.html">Mario kart 8 usa</a></span></p>
+	</div>
+    	<div class="ftn-float">
+		<a href="gateshark/game1966/index.html"><img src="uploaded_files/boxarts/1510872420.png" alt="Ice Station Z" /></a>
+		<p><span class="tnheader"><a href="gateshark/game1966/index.html">None</a></span></p>
+	</div>
+    	<div class="ftn-float">
+		<a href="gateshark/game1965/index.html"><img src="uploaded_files/boxarts/1510872384.png" alt="Ice Station Z" /></a>
+		<p><span class="tnheader"><a href="gateshark/game1965/index.html">None</a></span></p>
+	</div>
+    	<div class="ftn-float">
+		<a href="gateshark/game1964/index.html"><img src="uploaded_files/boxarts/1510286531.png" alt="Pokemon Ultra Moon" /></a>
+		<p><span class="tnheader"><a href="gateshark/game1964/index.html">None</a></span></p>
+	</div>
+    </div></div>
+<!--CONTENT END-->
+<div id="globalfooter">
+  <div id="footerlinks">
+		<ul>
+			<li class="flistheader">Fort42</li>
+			<li><a href="index.html">Home</a></li>
+            <li><a href="login/index.html">Login</a></li>
+			<li><a href="login/index.html">Register</a></li>      	</ul>
+		<ul>
+			
+			<li class="flistheader">Cheat Database</li>
+			<li><a href="ds/index.html">Ds</a></li>
+			<li><a href="wii u/index.html">WiiU</a></li>
+			<li><a href="3ds/index.html">3ds</a></li>
+			<li><a href="404.html">Switch</a></li>
+			<li><a href="404.html">Wii</a></li>
+			<li class="flistheader">Other helpful tools</li>
+			<li><a href="Flashcart/index.html">All in one flashcart firmware finder</a></li>
+    </ul>
+        	</div>
+	<center>
+	  <p id="footerline">CheatCove created by THEGUY3ds&nbsp; (2019)<br>
+	    All codes in the site belong to their respective creators.</p>
+	</center>
+	</div>
+<script type="text/javascript" src="chat/externalbd9f.php?type=djs" charset="utf-8"></script>
+<script type="text/javascript" src="chat/externalf352.php?type=js" charset="utf-8"></script></body>
+
+<!-- Mirrored from www.fort42.com/ by HTTrack Website Copier/3.x [XR&CO'2014], Sat, 19 Jan 2019 08:49:44 GMT -->
+</html>
